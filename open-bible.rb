@@ -1,13 +1,32 @@
 #!/usr/bin/env ruby
 
-plan = ARGV[0] || 'nt'
-
+require 'optparse'
 require 'date'
-require_relative './bibles/esv_org'
 require_relative './books'
-require_relative "./plans/#{plan}"
 
-start_date = Date.new(2026, 1, 4) # arbitrary start of plan
+options = { p: 'nt', d: '2026-1-4', s: 'esv_org' } # arbitrary start of plan
+parser = OptionParser.new
+parser.on('-p PLAN', 'Specify a reading plan (nt, ot_law, etc.)') do |p|
+  unless ['nt', 'ot_law'].include?(p)
+    puts "Invalid plan. Available plans: nt, ot_law"
+    exit 1
+  end
+  options[:p] = p
+end
+parser.on('-d DATE', 'Specify start date as YYYY-MM-DD')
+parser.on('-s SITE', 'Specify site to use (esv_org or bible_com)') do |s|
+  unless ['esv_org', 'bible_com'].include?(s)
+    puts "Invalid site. Available sites: esv_org, bible_com"
+    exit 1
+  end
+  options[:s] = s
+end
+parser.parse!(into: options)
+
+require_relative "./plans/#{options[:p]}" # This is where Plan is defined
+require_relative "./bibles/#{options[:s]}" # This is where Bible is defined
+
+start_date = Date.parse(options[:d])
 
 def find_book_and_chapter(books, plan_day)
   chapter_count = 0
