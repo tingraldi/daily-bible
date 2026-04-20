@@ -1,9 +1,0 @@
-require_relative '../books'
-
-module Plan
-  module_function
-
-  def books
-    Books::NT.all.map { |book, _| book }
-  end
-end

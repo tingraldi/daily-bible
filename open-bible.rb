@@ -4,15 +4,9 @@ require 'optparse'
 require 'date'
 require_relative './books'
 
-options = { p: 'nt', d: '2026-1-4', s: 'esv_org' } # arbitrary start of plan
+options = { d: '2026-1-4', s: 'esv_org', b: 'NT.all' } # arbitrary start of plan
 parser = OptionParser.new
-parser.on('-p PLAN', 'Specify a reading plan (nt, ot_law, etc.)') do |p|
-  unless ['nt', 'ot_law'].include?(p)
-    puts "Invalid plan. Available plans: nt, ot_law"
-    exit 1
-  end
-  options[:p] = p
-end
+parser.on('-b BOOKS', 'Specify books (NT.all, OT.law, etc.)')
 parser.on('-d DATE', 'Specify start date as YYYY-MM-DD')
 parser.on('-s SITE', 'Specify site to use (esv_org or bible_com)') do |s|
   unless ['esv_org', 'bible_com'].include?(s)
@@ -23,8 +17,7 @@ parser.on('-s SITE', 'Specify site to use (esv_org or bible_com)') do |s|
 end
 parser.parse!(into: options)
 
-require_relative "./plans/#{options[:p]}" # This is where Plan is defined
-require_relative "./bibles/#{options[:s]}" # This is where Bible is defined
+require_relative "./bibles/#{options[:s]}" # This is where the Bible module is defined
 
 start_date = Date.parse(options[:d])
 
@@ -53,14 +46,13 @@ def hide_other_apps
   system command
 end
 
-books = Plan.books
-book_chapters = Books.all.filter { |book, _| books.include?(book) }
-chapter_total = book_chapters.reduce(0) { |total, (_, chapter_count)| total + chapter_count }
+books = eval("Books::#{options[:b]}")
+chapter_total = books.reduce(0) { |total, (_, chapter_count)| total + chapter_count }
 
 # Open plan chapter of the day
 days_since_start = (Date.today - start_date).to_i + 1 # includes start day
 plan_day = days_since_start % chapter_total
-book, chapter = find_book_and_chapter(book_chapters, plan_day)
+book, chapter = find_book_and_chapter(books, plan_day)
 open_url(book, chapter)
 
 # Open Proverb of the day
