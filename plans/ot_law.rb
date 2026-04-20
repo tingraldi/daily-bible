@@ -4,6 +4,6 @@ module Plan
   module_function
 
   def books
-    Books::NT.all.map { |book, _| book }
+    Books::OT.law.map { |book, _| book }
   end
 end

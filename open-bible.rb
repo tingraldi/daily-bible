@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
+plan = ARGV[0] || 'nt'
+
 require 'date'
 require_relative './bibles/esv_org'
 require_relative './books'
-require_relative './plans/nt'
+require_relative "./plans/#{plan}"
 
 start_date = Date.new(2026, 1, 4) # arbitrary start of plan
 
@@ -22,7 +24,7 @@ def find_book_and_chapter(books, plan_day)
 end
 
 def open_url(book, chapter)
-  url = Bible::build_url(book, chapter)
+  url = Bible.build_url(book, chapter)
   command = "open -b com.apple.safari #{url}"
   system command
 end
@@ -32,8 +34,8 @@ def hide_other_apps
   system command
 end
 
-books = Plan::books
-book_chapters = Books::chapters.filter { |book, _| books.include?(book.to_s) }
+books = Plan.books
+book_chapters = Books.all.filter { |book, _| books.include?(book) }
 chapter_total = book_chapters.reduce(0) { |total, (_, chapter_count)| total + chapter_count }
 
 # Open plan chapter of the day
