@@ -1,16 +1,42 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
 require 'date'
+require 'optparse'
+require 'json'
 require_relative './books'
 
-options = { d: '2026-1-4', s: 'esv_org', b: 'NT.all' } # arbitrary start of plan
+
+def plan_file_contents
+  plan_file = File.expand_path('~/daily-bible.json')
+  return {} unless File.exist?(plan_file)
+
+  JSON.parse(File.read(plan_file))
+end
+
+def plan_defaults
+  plan_from_file = plan_file_contents
+  start_of_year = Date.new(Date.today.year).to_s
+  {
+    d: plan_from_file['start'] || start_of_year,
+    s: plan_from_file['site'] || 'esv_org',
+    b: plan_from_file['books'] || 'NT.all',
+    p: plan_from_file['pod'] || false
+  }
+end
+
+options = plan_defaults
 parser = OptionParser.new
 parser.on('-b BOOKS', 'Specify books (NT.all, OT.law, etc.)')
 parser.on('-d DATE', 'Specify start date as YYYY-MM-DD')
+parser.on('-P', 'Also open Proverb of the day') do |_|
+  options[:p] = true
+end
+parser.on('-p', 'Do not open Proverb of the day') do |_|
+  options[:p] = false
+end
 parser.on('-s SITE', 'Specify site to use (esv_org or bible_com)') do |s|
-  unless ['esv_org', 'bible_com'].include?(s)
-    puts "Invalid site. Available sites: esv_org, bible_com"
+  unless %w[esv_org bible_com].include?(s)
+    puts 'Invalid site. Available sites: esv_org, bible_com'
     exit 1
   end
   options[:s] = s
@@ -18,8 +44,6 @@ end
 parser.parse!(into: options)
 
 require_relative "./bibles/#{options[:s]}" # This is where the Bible module is defined
-
-start_date = Date.parse(options[:d])
 
 def find_book_and_chapter(books, plan_day)
   chapter_count = 0
@@ -41,23 +65,29 @@ def open_url(book, chapter)
   system command
 end
 
+def open_proverb_of_the_day
+  day_of_month = Time.now.day
+  open_url(:Proverbs, day_of_month)
+end
+
+def open_plan_chapter_of_the_day(options)
+  books = eval("Books::#{options[:b]}")
+  chapter_total = books.reduce(0) { |total, (_, chapter_count)| total + chapter_count }
+
+  start_date = Date.parse(options[:d])
+  days_since_start = (Date.today - start_date).to_i + 1 # includes start day
+  plan_day = days_since_start % chapter_total
+  book, chapter = find_book_and_chapter(books, plan_day)
+  open_url(book, chapter)
+end
+
 def hide_other_apps
   command = "osascript -e 'tell application \"System Events\"' -e 'set visible of every process whose frontmost is false to false' -e 'end tell'"
   system command
 end
 
-books = eval("Books::#{options[:b]}")
-chapter_total = books.reduce(0) { |total, (_, chapter_count)| total + chapter_count }
+open_plan_chapter_of_the_day(options)
 
-# Open plan chapter of the day
-days_since_start = (Date.today - start_date).to_i + 1 # includes start day
-plan_day = days_since_start % chapter_total
-book, chapter = find_book_and_chapter(books, plan_day)
-open_url(book, chapter)
+open_proverb_of_the_day if options[:p]
 
-# Open Proverb of the day
-day_of_month = Time.now.day
-open_url(:Proverbs, day_of_month)
-
-# Hide other apps
 hide_other_apps
