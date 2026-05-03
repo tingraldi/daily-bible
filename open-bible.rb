@@ -49,7 +49,7 @@ parser.on('-s SITE', "Specify site to use (#{available_sites.join(', ')})") do |
   end
   options[:s] = s
 end
-parser.on('-t translation', 'Specify translation (translations.keys.join(', ')') do |t|
+parser.on('-t translation', "Specify translation (#{translations.keys.join(', ')})") do |t|
   unless translations.keys.include?(t.upcase)
     puts 'Unsupported translation.'
     puts 'Available translations:'
