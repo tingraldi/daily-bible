@@ -99,7 +99,7 @@ def open_plan_chapter_of_the_day(options)
 end
 
 def hide_other_apps
-  command = "osascript -e 'tell application \"System Events\"' -e 'set visible of every process whose frontmost is false to false' -e 'end tell'"
+  command = "osascript -e 'tell application \"System Events\"' -e 'set visible of every process whose name is not \"Safari\" to false' -e 'end tell'"
   system command
 end
 
