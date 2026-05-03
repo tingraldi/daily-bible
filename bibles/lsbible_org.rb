@@ -3,6 +3,6 @@ module Bible
 
   def build_url(book, chapter, _translation)
     book_plus = book.to_s.gsub(' ', '+')
-    "https://www.esv.org/#{book_plus}+#{chapter}/"
+    "https://read.lsbible.org/?q=#{book_plus}+#{chapter}/"
   end
 end

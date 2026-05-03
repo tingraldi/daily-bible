@@ -1,6 +1,17 @@
 module Bible
   extend self
 
+  def translation_number(name)
+    names = {
+      'KJV' => '1',
+      'NKJV' => '114',
+      'NASB' => '100',
+      'ESV' => '59',
+      'LSB' => '3345'
+    }
+    names[name] || names['ESV']
+  end
+
   def book_map
     {
       # Old Testament - Law (Pentateuch)
@@ -89,8 +100,9 @@ module Bible
     }
   end
 
-  def build_url(book, chapter)
+  def build_url(book, chapter, translation)
     mapped_book = book_map[book]
-    "https://www.bible.com/bible/114/#{mapped_book}.#{chapter}.NKJV"
+    translation_number = translation_number(translation)
+    "https://www.bible.com/bible/#{translation_number}/#{mapped_book}.#{chapter}.#{translation}"
   end
 end

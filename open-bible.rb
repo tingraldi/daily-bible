@@ -5,6 +5,14 @@ require 'optparse'
 require 'json'
 require_relative './books'
 
+available_sites = Dir.glob('bibles/*.rb').map { File.basename(it, '.*') }
+translations = {
+  'KJV' => 'King James Version',
+  'NKJV' => 'New King James Version',
+  'NASB' => 'New American Standard Bible',
+  'ESV' => 'English Standard Version',
+  'LSB' => 'Legacy Standard Bible'
+}
 
 def plan_file_contents
   plan_file = File.expand_path('~/daily-bible.json')
@@ -34,12 +42,21 @@ end
 parser.on('-p', 'Do not open Proverb of the day') do |_|
   options[:p] = false
 end
-parser.on('-s SITE', 'Specify site to use (esv_org or bible_com)') do |s|
-  unless %w[esv_org bible_com].include?(s)
-    puts 'Invalid site. Available sites: esv_org, bible_com'
+parser.on('-s SITE', "Specify site to use (#{available_sites.join(', ')})") do |s|
+  unless available_sites.include?(s)
+    puts "Invalid site. Available sites: #{available_sites.join(', ')}"
     exit 1
   end
   options[:s] = s
+end
+parser.on('-t translation', 'Specify translation (translations.keys.join(', ')') do |t|
+  unless translations.keys.include?(t.upcase)
+    puts 'Unsupported translation.'
+    puts 'Available translations:'
+    translations.each do |k, v| puts "#{k}: #{v}" end
+    exit 1
+  end
+  options[:t] = t.upcase
 end
 parser.parse!(into: options)
 
@@ -59,15 +76,15 @@ def find_book_and_chapter(books, plan_day)
   end
 end
 
-def open_url(book, chapter)
-  url = Bible.build_url(book, chapter)
+def open_url(book, chapter, translation)
+  url = Bible.build_url(book, chapter, translation)
   command = "open -b com.apple.safari #{url}"
   system command
 end
 
-def open_proverb_of_the_day
+def open_proverb_of_the_day(translation)
   day_of_month = Time.now.day
-  open_url(:Proverbs, day_of_month)
+  open_url(:Proverbs, day_of_month, translation)
 end
 
 def open_plan_chapter_of_the_day(options)
@@ -78,7 +95,7 @@ def open_plan_chapter_of_the_day(options)
   days_since_start = (Date.today - start_date).to_i + 1 # includes start day
   plan_day = days_since_start % chapter_total
   book, chapter = find_book_and_chapter(books, plan_day)
-  open_url(book, chapter)
+  open_url(book, chapter, options[:t])
 end
 
 def hide_other_apps
@@ -88,6 +105,6 @@ end
 
 open_plan_chapter_of_the_day(options)
 
-open_proverb_of_the_day if options[:p]
+open_proverb_of_the_day(options[:t]) if options[:p]
 
 hide_other_apps
