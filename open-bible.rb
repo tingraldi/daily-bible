@@ -28,7 +28,8 @@ def plan_defaults
     d: plan_from_file['start'] || start_of_year,
     s: plan_from_file['site'] || 'esv_org',
     b: plan_from_file['books'] || 'NT.all',
-    p: plan_from_file['pod'] || false
+    p: plan_from_file['pod'] || false,
+    t: plan_from_file['translation'] || 'ESV'
   }
 end
 
