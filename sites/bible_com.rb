@@ -1,4 +1,4 @@
-module Bible
+module Site
   extend self
 
   def translation_number(name)
