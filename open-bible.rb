@@ -5,7 +5,7 @@ require 'optparse'
 require 'json'
 require_relative './books'
 
-available_sites = Dir.glob('sites/*.rb').map { File.basename(it, '.*') }
+available_sites = Dir.glob('sites/*.rb').map { |site| File.basename(site, '.*') }
 translations = {
   'KJV' => 'King James Version',
   'NKJV' => 'New King James Version',
