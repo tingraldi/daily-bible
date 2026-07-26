@@ -4,7 +4,7 @@ module Site
   def translation_name(name)
     names = {
       'KJV' => 'kjv',
-      'NKJV' => 'kjv',
+      'NKJV' => 'nkjv',
       'NASB' => 'nasb',
       'ESV' => 'esv',
       'LSB' => 'lsb'
