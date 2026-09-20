@@ -93,8 +93,8 @@ def open_plan_chapter_of_the_day(options)
   chapter_total = books.reduce(0) { |total, (_, chapter_count)| total + chapter_count }
 
   start_date = Date.parse(options[:d])
-  days_since_start = (Date.today - start_date).to_i + 1 # includes start day
-  plan_day = days_since_start % chapter_total
+  days_since_start = (Date.today - start_date).to_i
+  plan_day = days_since_start % chapter_total + 1
   book, chapter = find_book_and_chapter(books, plan_day)
   open_url(book, chapter, options[:t])
 end
